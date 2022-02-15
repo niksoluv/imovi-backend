@@ -5743,19 +5743,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Vitalii\\.nuget\\packages\\": {}
+    "C:\\Users\\vitalii.hladkyi\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Vitalii\\Desktop\\imovi\\imovi-backend\\imovi-backend\\imovi-backend.csproj",
+      "projectUniqueName": "C:\\Users\\vitalii.hladkyi\\Desktop\\diploma\\imovi-backend\\imovi-backend\\imovi-backend.csproj",
       "projectName": "imovi-backend",
-      "projectPath": "C:\\Users\\Vitalii\\Desktop\\imovi\\imovi-backend\\imovi-backend\\imovi-backend.csproj",
-      "packagesPath": "C:\\Users\\Vitalii\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Vitalii\\Desktop\\imovi\\imovi-backend\\imovi-backend\\obj\\",
+      "projectPath": "C:\\Users\\vitalii.hladkyi\\Desktop\\diploma\\imovi-backend\\imovi-backend\\imovi-backend.csproj",
+      "packagesPath": "C:\\Users\\vitalii.hladkyi\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\vitalii.hladkyi\\Desktop\\diploma\\imovi-backend\\imovi-backend\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Vitalii\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\vitalii.hladkyi\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -5826,7 +5826,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.200-preview.22055.15\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.101\\RuntimeIdentifierGraph.json"
       }
     }
   }
