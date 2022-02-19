@@ -20,6 +20,7 @@ namespace imovi_backend.Core.Repositories
         {
             _context = context;
             _logger = logger;
+            dbSet = _context.Set<T>();
         }
 
         public virtual async Task<IEnumerable<T>> All()

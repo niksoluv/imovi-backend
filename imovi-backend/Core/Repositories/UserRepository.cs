@@ -1,10 +1,15 @@
 ﻿using imovi_backend.Core.IRepositories;
 using imovi_backend.Models;
+using imovi_backend.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace imovi_backend.Core.Repositories
@@ -86,6 +91,53 @@ namespace imovi_backend.Core.Repositories
                 _logger.LogError(ex, "{Delete} All method error", typeof(UserRepository));
                 return false;
             }
+        }
+
+        public object GetToken(User user)
+        {
+            var identity = GetIdentity(user.Username, user.Password);
+            if (identity == null)
+            {
+                return null;
+                //return BadRequest(new { errorText = "Invalid username or password." });
+            }
+
+            var now = DateTime.UtcNow;
+            // создаем JWT-токен
+            var jwt = new JwtSecurityToken(
+                    issuer: AuthOptions.ISSUER,
+                    audience: AuthOptions.AUDIENCE,
+                    notBefore: now,
+                    claims: identity.Claims,
+                    expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
+                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+            var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+
+            var response = new
+            {
+                access_token = encodedJwt,
+                username = identity.Name
+            };
+            return response;
+        }
+        private ClaimsIdentity GetIdentity(string username, string password)
+        {
+            User user = dbSet.FirstOrDefault(x => x.Username == username && x.Password == password);
+            if (user != null)
+            {
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, user.Username),
+                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role)
+                };
+                ClaimsIdentity claimsIdentity =
+                new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
+                    ClaimsIdentity.DefaultRoleClaimType);
+                return claimsIdentity;
+            }
+
+            // если пользователя не найдено
+            return null;
         }
     }
 }

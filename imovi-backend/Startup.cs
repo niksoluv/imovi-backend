@@ -1,3 +1,4 @@
+using imovi_backend.Core.IConfiguration;
 using imovi_backend.Models;
 using imovi_backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -65,6 +66,8 @@ namespace imovi_backend
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "imovi_backend", Version = "v1" });
             });
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
