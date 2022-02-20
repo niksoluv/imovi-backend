@@ -27,7 +27,7 @@ namespace imovi_backend.Controllers
             _unitOfWork = unitOfWork;
         }
 
-        [Authorize(Roles = "admin")]
+        //[Authorize(Roles = "admin")]
         [HttpGet]
         [Route("getUsers")]
         public async Task<IEnumerable<User>> GetAllUsers()
