@@ -52,7 +52,18 @@ namespace imovi_backend.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetItem(Guid id)
         {
-            var user = _unitOfWork.Users.GetById(id);
+            var user = await _unitOfWork.Users.GetById(id);
+            if (user == null)
+            {
+                return NotFound(); //404
+            }
+            return Ok(user);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetByUsername()
+        {
+            var user = await _unitOfWork.Users.GetByUsername(User.Identity.Name);
             if (user == null)
             {
                 return NotFound(); //404
@@ -61,7 +72,7 @@ namespace imovi_backend.Controllers
         }
 
         [HttpPost("/token")]
-        public IActionResult Token([FromBody] User user)
+        public async Task<IActionResult> Token([FromBody] User user)
         {
             var token = _unitOfWork.Users.GetToken(user);
             if (token == null) return NotFound();

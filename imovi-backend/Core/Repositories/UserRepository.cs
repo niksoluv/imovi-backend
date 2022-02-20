@@ -41,8 +41,8 @@ namespace imovi_backend.Core.Repositories
             try
             {
                 var user = await dbSet.FirstOrDefaultAsync(x => x.Id == id);
-                if(user != null)
-                return user.Username;
+                if (user != null)
+                    return user.Username;
 
                 return "";
             }
@@ -50,6 +50,23 @@ namespace imovi_backend.Core.Repositories
             {
                 _logger.LogError(ex, "{Repo} GetUserUsername method error", typeof(UserRepository));
                 return "";
+            }
+        }
+
+        public async Task<User> GetByUsername(string username)
+        {
+            try
+            {
+                var user = await dbSet.FirstOrDefaultAsync(x => x.Username == username);
+                if (user != null)
+                    return user;
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} GetByUsername method error", typeof(UserRepository));
+                return null;
             }
         }
 

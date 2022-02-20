@@ -84,6 +84,14 @@ namespace imovi_backend
 
             app.UseRouting();
 
+            app.UseCors(builder =>
+            {
+                builder.SetIsOriginAllowed(_ => true);
+                builder.AllowAnyOrigin();
+                builder.AllowAnyHeader();
+                builder.AllowAnyMethod();
+            });
+
             app.UseAuthentication();
             app.UseAuthorization();
 

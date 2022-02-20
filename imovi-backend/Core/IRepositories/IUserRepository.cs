@@ -8,6 +8,7 @@ namespace imovi_backend.Core.IRepositories
     public interface IUserRepository : IGenericRepository<User>
     {
         Task<string> GetUserUsername(Guid id);
+        Task<User> GetByUsername(string username);
         object GetToken(User user);
     }
 }
