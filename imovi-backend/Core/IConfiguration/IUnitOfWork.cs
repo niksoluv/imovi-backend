@@ -6,6 +6,7 @@ namespace imovi_backend.Core.IConfiguration
     public interface IUnitOfWork
     {
         IUserRepository Users { get; }
+        IMoviesRepository Movies { get; }
         Task CompleteAsync();
     }
 }

@@ -14,6 +14,8 @@ namespace imovi_backend
         private readonly ILogger _logger;
 
         public IUserRepository Users { get; private set; }
+        public IMoviesRepository Movies { get; private set; }
+
 
         public UnitOfWork(
             ApplicationContext context, 
@@ -23,6 +25,7 @@ namespace imovi_backend
             _logger = loggerFactory.CreateLogger("logs");
 
             Users = new UserRepository(_context, _logger);
+            Movies = new MoviesRepository(_context, _logger);
         }
 
         public async Task CompleteAsync()

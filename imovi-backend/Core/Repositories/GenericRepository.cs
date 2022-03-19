@@ -23,7 +23,7 @@ namespace imovi_backend.Core.Repositories
             dbSet = _context.Set<T>();
         }
 
-        public virtual async Task<IEnumerable<T>> All()
+        public virtual async Task<IEnumerable<T>> All(Guid userId)
         {
             return await dbSet.ToListAsync();
         }

@@ -23,7 +23,7 @@ namespace imovi_backend.Core.Repositories
 
         }
 
-        public override async Task<IEnumerable<User>> All()
+        public override async Task<IEnumerable<User>> All(Guid userId)
         {
             try
             {

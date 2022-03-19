@@ -1,15 +1,10 @@
 ﻿using imovi_backend.Core.IConfiguration;
 using imovi_backend.Models;
-using imovi_backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace imovi_backend.Controllers
@@ -27,12 +22,12 @@ namespace imovi_backend.Controllers
             _unitOfWork = unitOfWork;
         }
 
-        //[Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin")]
         [HttpGet]
         [Route("getUsers")]
         public async Task<IEnumerable<User>> GetAllUsers()
         {
-            return await _unitOfWork.Users.All();
+            return await _unitOfWork.Users.All(new Guid());
         }
 
         [HttpPost("/create")]
@@ -50,7 +45,7 @@ namespace imovi_backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetItem(Guid id)
+        public async Task<IActionResult> GetUser(Guid id)
         {
             var user = await _unitOfWork.Users.GetById(id);
             if (user == null)
