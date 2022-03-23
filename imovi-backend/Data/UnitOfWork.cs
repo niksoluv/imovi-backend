@@ -15,6 +15,7 @@ namespace imovi_backend
 
         public IUserRepository Users { get; private set; }
         public IMoviesRepository Movies { get; private set; }
+        public IMovieHistoryRepository UserHistory { get; private set; }
 
 
         public UnitOfWork(
@@ -26,6 +27,7 @@ namespace imovi_backend
 
             Users = new UserRepository(_context, _logger);
             Movies = new MoviesRepository(_context, _logger);
+            UserHistory = new MovieHistoryRepository(_context, _logger);
         }
 
         public async Task CompleteAsync()
