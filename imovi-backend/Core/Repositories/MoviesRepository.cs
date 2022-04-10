@@ -22,6 +22,7 @@ namespace imovi_backend.Core.Repositories
         public override async Task<IEnumerable<FavouriteMovie>> All(Guid userId)
         {
             var movies = await dbSet.Where(fm => fm.UserId == userId).ToListAsync();
+            movies.Reverse();
             return movies;
         }
 
