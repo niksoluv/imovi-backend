@@ -29,6 +29,12 @@ namespace imovi_backend.Core.Repositories
         {
             try
             {
+                FavouriteMovie existingMovie = await dbSet.
+                    Where(fm => fm.UserId == userId && fm.MovieId == favouriteMovie.MovieId).FirstOrDefaultAsync();
+                if (existingMovie != null)
+                {
+                    return existingMovie;
+                }
                 FavouriteMovie movie = new FavouriteMovie()
                 { UserId = userId, MovieId = favouriteMovie.MovieId, MediaType = favouriteMovie.MediaType };
                 await _context.FavoriteMovies.AddAsync(movie);
