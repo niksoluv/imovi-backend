@@ -1,4 +1,6 @@
-﻿namespace imovi_backend.Models
+﻿using System.Collections.Generic;
+
+namespace imovi_backend.Models
 {
     public class Movie : BaseEntity
     {

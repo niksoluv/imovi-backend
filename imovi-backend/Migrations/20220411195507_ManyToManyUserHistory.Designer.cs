@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using imovi_backend.Models;
@@ -9,9 +10,10 @@ using imovi_backend.Models;
 namespace imovi_backend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220411195507_ManyToManyUserHistory")]
+    partial class ManyToManyUserHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -113,17 +115,12 @@ namespace imovi_backend.Migrations
             modelBuilder.Entity("imovi_backend.Models.UserMovieHistory", b =>
                 {
                     b.HasOne("imovi_backend.Models.Movie", "Movie")
-                        .WithMany("UserMovieHistories")
+                        .WithMany()
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Movie");
-                });
-
-            modelBuilder.Entity("imovi_backend.Models.Movie", b =>
-                {
-                    b.Navigation("UserMovieHistories");
                 });
 #pragma warning restore 612, 618
         }
