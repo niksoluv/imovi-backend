@@ -33,15 +33,27 @@ namespace imovi_backend.Controllers
         [HttpPost("/create")]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                await _unitOfWork.Users.Add(user);
-                await _unitOfWork.CompleteAsync();
-
-                return CreatedAtAction("GetItem", new { user.Id }, user);
+                return new JsonResult("Smth is wrong") { StatusCode = 500 };
             }
 
-            return new JsonResult("Smth is wrong") { StatusCode = 500 };
+            bool usernameExists = await _unitOfWork.Users.DoesUsernameExists(user.Username);
+            if (usernameExists)
+            {
+                return Ok(new { errorMessage = "User with this username already exists." });
+            }
+
+            bool emailExists = await _unitOfWork.Users.DoesEmailExists(user.Email);
+            if (emailExists)
+            {
+                return Ok(new { errorMessage = "User with this email already exists." });
+            }
+
+            await _unitOfWork.Users.Add(user);
+            await _unitOfWork.CompleteAsync();
+
+            return Ok(user);
         }
 
         [HttpGet("{id}")]

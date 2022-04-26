@@ -110,6 +110,42 @@ namespace imovi_backend.Core.Repositories
             }
         }
 
+        public async Task<bool> DoesUsernameExists(string username)
+        {
+            try
+            {
+                User existingUser = await dbSet.FirstOrDefaultAsync(u => u.Username == username);
+                if (existingUser != null)
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{DoesUsernameExists} All method error", typeof(UserRepository));
+                return false;
+            }
+        }
+
+        public async Task<bool> DoesEmailExists(string email)
+        {
+            try
+            {
+                User existingUser = await dbSet.FirstOrDefaultAsync(u => u.Email == email);
+                if (existingUser != null)
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{DoesEmailExists} All method error", typeof(UserRepository));
+                return false;
+            }
+        }
+
         public object GetToken(User user)
         {
             var identity = GetIdentity(user.Username, user.Password);

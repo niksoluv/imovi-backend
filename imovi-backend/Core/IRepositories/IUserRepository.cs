@@ -10,5 +10,7 @@ namespace imovi_backend.Core.IRepositories
         Task<string> GetUserUsername(Guid id);
         Task<User> GetByUsername(string username);
         object GetToken(User user);
+        Task<bool> DoesUsernameExists(string username);
+        Task<bool> DoesEmailExists(string email);
     }
 }
