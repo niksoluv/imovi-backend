@@ -73,7 +73,7 @@ namespace imovi_backend.Controllers
             var user = await _unitOfWork.Users.GetByUsername(User.Identity.Name);
             if (user == null)
             {
-                return NotFound(); //404
+                return NotFound(new { errorMessage = "Invalid username or password." }); //404
             }
             return Ok(user);
         }
