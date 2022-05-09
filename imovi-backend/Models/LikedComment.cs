@@ -6,5 +6,6 @@ namespace imovi_backend.Models
     {
         public Guid CommentId { get; set; }
         public Guid UserId { get;set;}
+        public User User { get; set; }
     }
 }

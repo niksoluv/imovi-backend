@@ -1,4 +1,5 @@
 ﻿using imovi_backend.Core.IConfiguration;
+using imovi_backend.Data;
 using imovi_backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -46,13 +47,13 @@ namespace imovi_backend.Controllers
         [HttpPost]
         [Authorize]
         [Route("like")]
-        public async Task<IActionResult> LikeComment(Guid commentId)
+        public async Task<IActionResult> LikeComment([FromBody] CommentIdDTO commentId)
         {
             var user = await _unitOfWork.Users.GetByUsername(User.Identity.Name);
             if (user == null)
                 return NotFound();
 
-            var result = await _unitOfWork.Comments.LikeComment(commentId, user.Id);
+            var result = await _unitOfWork.Comments.LikeComment(commentId.CommentId, user.Id);
             if (result == null)
                 return null;
 

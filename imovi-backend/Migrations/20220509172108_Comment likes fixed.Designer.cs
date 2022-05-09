@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using imovi_backend.Models;
@@ -9,9 +10,10 @@ using imovi_backend.Models;
 namespace imovi_backend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220509172108_Comment likes fixed")]
+    partial class Commentlikesfixed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -197,8 +199,8 @@ namespace imovi_backend.Migrations
 
             modelBuilder.Entity("imovi_backend.Models.LikedComment", b =>
                 {
-                    b.HasOne("imovi_backend.Models.Comment", null)
-                        .WithMany("UsersLikes")
+                    b.HasOne("imovi_backend.Models.Comment", "Comment")
+                        .WithMany()
                         .HasForeignKey("CommentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -208,6 +210,8 @@ namespace imovi_backend.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Comment");
 
                     b.Navigation("User");
                 });
@@ -221,11 +225,6 @@ namespace imovi_backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Movie");
-                });
-
-            modelBuilder.Entity("imovi_backend.Models.Comment", b =>
-                {
-                    b.Navigation("UsersLikes");
                 });
 #pragma warning restore 612, 618
         }

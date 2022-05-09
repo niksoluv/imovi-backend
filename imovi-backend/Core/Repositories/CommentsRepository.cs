@@ -47,6 +47,7 @@ namespace imovi_backend.Core.Repositories
                     .Where(comment=>comment.Movie.MovieId==movieId)
                     .Include(c=>c.Movie)
                     .Include(c=>c.User)
+                    .Include(c=>c.UsersLikes)
                     .ToListAsync(); 
                 comments.Reverse();
                 return comments;
