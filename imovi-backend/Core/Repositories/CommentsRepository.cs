@@ -57,5 +57,54 @@ namespace imovi_backend.Core.Repositories
                 return null;
             }
         }
+
+        public async Task<Comment> LikeComment(Guid commentId, Guid userId)
+        {
+            try
+            {
+                var comment = await dbSet.Where(c=>c.Id==commentId).FirstOrDefaultAsync();
+
+                if(comment==null)
+                    return null;
+
+                LikedComment likedComment = new LikedComment()
+                {
+                    CommentId = commentId,
+                    UserId = userId,
+                };
+
+                _context.LikedComments.Add(likedComment);
+
+                comment.Likes++;
+
+                return comment;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} LikeComment method error", typeof(CommentsRepository));
+                return null;
+            }
+        }
+
+        public async Task<Comment> UnlikeComment(Guid commentId, Guid userId)
+        {
+            try
+            {
+                var comment = await dbSet.Where(c => c.Id == commentId).FirstOrDefaultAsync();
+
+                if (comment == null)
+                    return null;
+
+                if(comment.Likes > 0)
+                    comment.Likes--;
+
+                return comment;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} UnlikeComment method error", typeof(CommentsRepository));
+                return null;
+            }
+        }
     }
 }

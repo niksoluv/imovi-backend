@@ -3,6 +3,7 @@ using imovi_backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace imovi_backend.Controllers
@@ -40,6 +41,40 @@ namespace imovi_backend.Controllers
         {
             var comments = await _unitOfWork.Comments.GetMovieComments(movieId);
             return Ok(new { response = comments });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("like")]
+        public async Task<IActionResult> LikeComment(Guid commentId)
+        {
+            var user = await _unitOfWork.Users.GetByUsername(User.Identity.Name);
+            if (user == null)
+                return NotFound();
+
+            var result = await _unitOfWork.Comments.LikeComment(commentId, user.Id);
+            if (result == null)
+                return null;
+
+            await _unitOfWork.CompleteAsync();
+            return Ok(new { response = result });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("unlike")]
+        public async Task<IActionResult> UnlikeComment(Guid commentId)
+        {
+            var user = await _unitOfWork.Users.GetByUsername(User.Identity.Name);
+            if (user == null)
+                return NotFound();
+
+            var result = await _unitOfWork.Comments.UnlikeComment(commentId, user.Id);
+            if (result == null)
+                return null;
+
+            await _unitOfWork.CompleteAsync();
+            return Ok(new { response = result });
         }
     }
 }
