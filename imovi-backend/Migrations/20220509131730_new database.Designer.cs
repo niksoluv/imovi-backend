@@ -10,8 +10,8 @@ using imovi_backend.Models;
 namespace imovi_backend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20220505213802_BaseEntityUpdate")]
-    partial class BaseEntityUpdate
+    [Migration("20220509131730_new database")]
+    partial class newdatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -69,8 +69,8 @@ namespace imovi_backend.Migrations
                     b.Property<string>("MediaType")
                         .HasColumnType("text");
 
-                    b.Property<string>("MovieId")
-                        .HasColumnType("text");
+                    b.Property<Guid>("MovieId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -78,6 +78,26 @@ namespace imovi_backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FavoriteMovies");
+                });
+
+            modelBuilder.Entity("imovi_backend.Models.LikedComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CommentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LikedComments");
                 });
 
             modelBuilder.Entity("imovi_backend.Models.Movie", b =>

@@ -1,4 +1,5 @@
 ﻿using imovi_backend.Core.IConfiguration;
+using imovi_backend.Data;
 using imovi_backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +24,7 @@ namespace imovi_backend.Controllers
         [HttpPost]
         [Authorize]
         [Route("addToFavourites")]
-        public async Task<IActionResult> AddToFavourites([FromBody] FavouriteMovie movie)
+        public async Task<IActionResult> AddToFavourites([FromBody] FavMovieDTO movie)
         {
             var user = await _unitOfWork.Users.GetByUsername(User.Identity.Name);
             if (user == null)
@@ -64,7 +65,7 @@ namespace imovi_backend.Controllers
             var user = await _unitOfWork.Users.GetByUsername(User.Identity.Name);
             if (user == null)
                 return NotFound();
-            var result = await _unitOfWork.Movies.RemoveFromFavourites(user.Id, movie.MovieId);
+            var result = await _unitOfWork.Movies.RemoveFromFavourites(user.Id, movie.Id.ToString());
             await _unitOfWork.CompleteAsync();
             return Ok(new { response = result });
         }

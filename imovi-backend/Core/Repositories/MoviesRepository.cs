@@ -1,4 +1,5 @@
 ﻿using imovi_backend.Core.IRepositories;
+using imovi_backend.Data;
 using imovi_backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,25 +22,36 @@ namespace imovi_backend.Core.Repositories
 
         public override async Task<IEnumerable<FavouriteMovie>> All(Guid userId)
         {
-            var movies = await dbSet.Where(fm => fm.UserId == userId).ToListAsync();
+            var movies = await dbSet.Where(fm => fm.UserId == userId)
+                .Include(fm=>fm.Movie)
+                .ToListAsync();
             movies.Reverse();
             return movies;
         }
 
-        public async Task<FavouriteMovie> AddToFavourites(Guid userId, FavouriteMovie favouriteMovie)
+        public async Task<FavouriteMovie> AddToFavourites(Guid userId, FavMovieDTO favouriteMovieDTO)
         {
             try
             {
+                var movie = await _context.Movies.Where(m=>m.MovieId== favouriteMovieDTO.MovieId).FirstOrDefaultAsync();
+
+                if(movie==null)
+                    _context.Movies.Add(new Movie()
+                    {
+                        MovieId = favouriteMovieDTO.MovieId,
+                        MediaType = favouriteMovieDTO.MediaType,
+                    });
+
                 FavouriteMovie existingMovie = await dbSet.
-                    Where(fm => fm.UserId == userId && fm.MovieId == favouriteMovie.MovieId).FirstOrDefaultAsync();
+                    Where(fm => fm.UserId == userId && fm.MovieId == movie.Id).FirstOrDefaultAsync();
                 if (existingMovie != null)
                 {
                     return existingMovie;
                 }
-                FavouriteMovie movie = new FavouriteMovie()
-                { UserId = userId, MovieId = favouriteMovie.MovieId, MediaType = favouriteMovie.MediaType };
-                await _context.FavoriteMovies.AddAsync(movie);
-                return movie;
+                FavouriteMovie newMovie = new FavouriteMovie()
+                { UserId = userId, Movie = movie };
+                await _context.FavoriteMovies.AddAsync(newMovie);
+                return newMovie;
             }
             catch (Exception ex)
             {
@@ -52,8 +64,15 @@ namespace imovi_backend.Core.Repositories
         {
             try
             {
-                FavouriteMovie movie = await dbSet.Where(fm => fm.UserId == userId && fm.MovieId == movieId).FirstOrDefaultAsync();
-                dbSet.Remove(movie);
+                var movie = await _context.Movies.Where(m => m.MovieId == movieId).FirstOrDefaultAsync();
+                if (movie == null)
+                {
+                    return false;
+                }
+                FavouriteMovie favouriteMovie = await dbSet
+                    .Where(fm => fm.UserId == userId && fm.MovieId == movie.Id).FirstOrDefaultAsync();
+                
+                dbSet.Remove(favouriteMovie);
                 return true;
             }
             catch (Exception ex)
@@ -67,11 +86,17 @@ namespace imovi_backend.Core.Repositories
         {
             try
             {
-                var movie = await dbSet.
-                    Where(fm => fm.UserId == userId && fm.MovieId == movieId).
+                var movie = await _context.Movies.Where(m=>m.MovieId==movieId).FirstOrDefaultAsync();
+                if (movie == null)
+                {
+                    return false;
+                }
+
+                var favouriteMovie = await dbSet.
+                    Where(fm => fm.UserId == userId && fm.MovieId == movie.Id).
                     FirstOrDefaultAsync();
-                await dbSet.AddAsync(movie);
-                if (movie != null)
+                await dbSet.AddAsync(favouriteMovie);
+                if (favouriteMovie != null)
                     return true;
                 return false;
             }
