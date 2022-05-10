@@ -96,8 +96,12 @@ namespace imovi_backend.Core.Repositories
                 if (comment == null)
                     return null;
 
-                if(comment.Likes > 0)
+                if (comment.Likes > 0)
                     comment.Likes--;
+
+                LikedComment likedComment = await _context.LikedComments
+                    .Where(lc=>lc.CommentId == commentId && lc.UserId==userId).FirstOrDefaultAsync();
+                _context.LikedComments.Remove(likedComment);
 
                 return comment;
             }

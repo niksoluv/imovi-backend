@@ -64,13 +64,13 @@ namespace imovi_backend.Controllers
         [HttpPost]
         [Authorize]
         [Route("unlike")]
-        public async Task<IActionResult> UnlikeComment(Guid commentId)
+        public async Task<IActionResult> UnlikeComment([FromBody] CommentIdDTO commentId)
         {
             var user = await _unitOfWork.Users.GetByUsername(User.Identity.Name);
             if (user == null)
                 return NotFound();
 
-            var result = await _unitOfWork.Comments.UnlikeComment(commentId, user.Id);
+            var result = await _unitOfWork.Comments.UnlikeComment(commentId.CommentId, user.Id);
             if (result == null)
                 return null;
 
