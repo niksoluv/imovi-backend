@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using imovi_backend.Models;
@@ -9,9 +10,10 @@ using imovi_backend.Models;
 namespace imovi_backend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220516193421_CustomListsMigration")]
+    partial class CustomListsMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,9 +25,6 @@ namespace imovi_backend.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("CommentId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Data")
@@ -50,8 +49,6 @@ namespace imovi_backend.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CommentId");
 
                     b.HasIndex("MovieId");
 
@@ -82,29 +79,7 @@ namespace imovi_backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CustomLists");
-                });
-
-            modelBuilder.Entity("imovi_backend.Models.CustomListMovie", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CustomListId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid>("MovieId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MovieId");
-
-                    b.ToTable("CustomListsMovies");
+                    b.ToTable("CustomList");
                 });
 
             modelBuilder.Entity("imovi_backend.Models.FavouriteMovie", b =>
@@ -223,10 +198,6 @@ namespace imovi_backend.Migrations
 
             modelBuilder.Entity("imovi_backend.Models.Comment", b =>
                 {
-                    b.HasOne("imovi_backend.Models.Comment", null)
-                        .WithMany("CommentReplies")
-                        .HasForeignKey("CommentId");
-
                     b.HasOne("imovi_backend.Models.Movie", "Movie")
                         .WithMany()
                         .HasForeignKey("MovieId");
@@ -247,17 +218,6 @@ namespace imovi_backend.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("imovi_backend.Models.CustomListMovie", b =>
-                {
-                    b.HasOne("imovi_backend.Models.Movie", "Movie")
-                        .WithMany()
-                        .HasForeignKey("MovieId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Movie");
                 });
 
             modelBuilder.Entity("imovi_backend.Models.FavouriteMovie", b =>
@@ -301,8 +261,6 @@ namespace imovi_backend.Migrations
 
             modelBuilder.Entity("imovi_backend.Models.Comment", b =>
                 {
-                    b.Navigation("CommentReplies");
-
                     b.Navigation("UsersLikes");
                 });
 

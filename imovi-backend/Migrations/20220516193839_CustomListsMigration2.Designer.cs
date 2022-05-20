@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using imovi_backend.Models;
@@ -9,9 +10,10 @@ using imovi_backend.Models;
 namespace imovi_backend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220516193839_CustomListsMigration2")]
+    partial class CustomListsMigration2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,9 +25,6 @@ namespace imovi_backend.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("CommentId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Data")
@@ -50,8 +49,6 @@ namespace imovi_backend.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CommentId");
 
                     b.HasIndex("MovieId");
 
@@ -223,10 +220,6 @@ namespace imovi_backend.Migrations
 
             modelBuilder.Entity("imovi_backend.Models.Comment", b =>
                 {
-                    b.HasOne("imovi_backend.Models.Comment", null)
-                        .WithMany("CommentReplies")
-                        .HasForeignKey("CommentId");
-
                     b.HasOne("imovi_backend.Models.Movie", "Movie")
                         .WithMany()
                         .HasForeignKey("MovieId");
@@ -301,8 +294,6 @@ namespace imovi_backend.Migrations
 
             modelBuilder.Entity("imovi_backend.Models.Comment", b =>
                 {
-                    b.Navigation("CommentReplies");
-
                     b.Navigation("UsersLikes");
                 });
 

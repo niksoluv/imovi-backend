@@ -11,5 +11,6 @@ namespace imovi_backend.Models
         public int Dislikes { get;set;} = 0;
         public Movie Movie { get;set; }
         public IEnumerable<LikedComment> UsersLikes { get;set;}
+        public IEnumerable<Comment> CommentReplies { get;set;}
     }
 }

@@ -10,6 +10,8 @@ namespace imovi_backend.Models
         public DbSet<UserMovieHistory> UserMovieHistories { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<LikedComment> LikedComments { get; set; }
+        public DbSet<CustomList> CustomLists { get; set; }
+        public DbSet<CustomListMovie> CustomListsMovies { get; set; }
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)
         {
