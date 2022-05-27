@@ -9,6 +9,7 @@ namespace imovi_backend.Core.IConfiguration
         IMoviesRepository Movies { get; }
         IMovieHistoryRepository UserHistory { get; }
         ICommentsRepository Comments { get; }
+        ICustomListsRepository CustomLists { get; }
         Task CompleteAsync();
     }
 }
