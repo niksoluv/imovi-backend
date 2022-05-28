@@ -1,4 +1,5 @@
 ﻿using imovi_backend.Core.IRepositories;
+using imovi_backend.Data;
 using imovi_backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -39,17 +40,44 @@ namespace imovi_backend.Core.Repositories
             }
         }
 
+        public async Task<Comment> ReplyComment(CommentReplyDTO commentReply, User user)
+        {
+            try
+            {
+                Comment comment = await dbSet.Where(c=>c.Id==commentReply.CommentId).FirstOrDefaultAsync();
+
+                CommentReply reply = new CommentReply()
+                {
+                    User = user,
+                    Data = commentReply.Data,
+                    CommentId = comment.Id
+                };
+
+                await _context.CommentReplies.AddAsync(reply);
+
+                return comment;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} CreateComment method error", typeof(CommentsRepository));
+                return null;
+            }
+        }
+
         public async Task<List<Comment>> GetMovieComments(string movieId)
         {
             try
             {
                 var comments = await dbSet
-                    .Where(comment=>comment.Movie.MovieId==movieId)
-                    .Include(c=>c.Movie)
-                    .Include(c=>c.User)
-                    .Include(c=>c.UsersLikes)
-                    .ToListAsync(); 
+                    .Where(comment => comment.Movie.MovieId == movieId)
+                    .Include(c => c.Movie)
+                    .Include(c => c.User)
+                    .Include(c => c.UsersLikes)
+                    .Include(c=>c.CommentReplies)
+                    .ToListAsync();
                 comments.Reverse();
+
+
                 return comments;
             }
             catch (Exception ex)
@@ -63,9 +91,9 @@ namespace imovi_backend.Core.Repositories
         {
             try
             {
-                var comment = await dbSet.Where(c=>c.Id==commentId).FirstOrDefaultAsync();
+                var comment = await dbSet.Where(c => c.Id == commentId).FirstOrDefaultAsync();
 
-                if(comment==null)
+                if (comment == null)
                     return null;
 
                 LikedComment likedComment = new LikedComment()
@@ -100,7 +128,7 @@ namespace imovi_backend.Core.Repositories
                     comment.Likes--;
 
                 LikedComment likedComment = await _context.LikedComments
-                    .Where(lc=>lc.CommentId == commentId && lc.UserId==userId).FirstOrDefaultAsync();
+                    .Where(lc => lc.CommentId == commentId && lc.UserId == userId).FirstOrDefaultAsync();
                 _context.LikedComments.Remove(likedComment);
 
                 return comment;

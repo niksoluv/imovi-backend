@@ -92,5 +92,21 @@ namespace imovi_backend.Controllers
             await _unitOfWork.CompleteAsync();
             return Ok(res);
         }
+        [HttpDelete]
+        [Route("delete")]
+        [Authorize]
+        public async Task<IActionResult> DeleteList([FromBody] CustomList customList)
+        {
+            var user = await _unitOfWork.Users.GetByUsername(User.Identity.Name);
+            if (user == null)
+            {
+                return NotFound(new { errorMessage = "Invalid username or password." }); //404
+            }
+
+
+            var res = await _unitOfWork.CustomLists.Delete(customList.Id);
+            await _unitOfWork.CompleteAsync();
+            return Ok(res);
+        }
     }
 }

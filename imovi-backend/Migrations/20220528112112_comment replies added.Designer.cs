@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using imovi_backend.Models;
@@ -9,9 +10,10 @@ using imovi_backend.Models;
 namespace imovi_backend.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220528112112_comment replies added")]
+    partial class commentrepliesadded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -61,7 +63,7 @@ namespace imovi_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CommentId")
+                    b.Property<Guid?>("CommentId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Data")
@@ -273,15 +275,15 @@ namespace imovi_backend.Migrations
 
             modelBuilder.Entity("imovi_backend.Models.CommentReply", b =>
                 {
-                    b.HasOne("imovi_backend.Models.Comment", null)
+                    b.HasOne("imovi_backend.Models.Comment", "Comment")
                         .WithMany("CommentReplies")
-                        .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CommentId");
 
                     b.HasOne("imovi_backend.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
+
+                    b.Navigation("Comment");
 
                     b.Navigation("User");
                 });
