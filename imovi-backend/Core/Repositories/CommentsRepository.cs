@@ -74,6 +74,7 @@ namespace imovi_backend.Core.Repositories
                     .Include(c => c.User)
                     .Include(c => c.UsersLikes)
                     .Include(c=>c.CommentReplies)
+                    .ThenInclude(cr=>cr.User)
                     .ToListAsync();
                 comments.Reverse();
 
