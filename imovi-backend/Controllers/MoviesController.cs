@@ -60,12 +60,12 @@ namespace imovi_backend.Controllers
         [HttpDelete]
         [Authorize]
         [Route("removeFromFavourites")]
-        public async Task<IActionResult> RemoveFromFavourites([FromBody] FavouriteMovie movie)
+        public async Task<IActionResult> RemoveFromFavourites([FromBody] FavMovieDTO movie)
         {
             var user = await _unitOfWork.Users.GetByUsername(User.Identity.Name);
             if (user == null)
                 return NotFound();
-            var result = await _unitOfWork.Movies.RemoveFromFavourites(user.Id, movie.Id.ToString());
+            var result = await _unitOfWork.Movies.RemoveFromFavourites(user.Id, movie.MovieId);
             await _unitOfWork.CompleteAsync();
             return Ok(new { response = result });
         }
