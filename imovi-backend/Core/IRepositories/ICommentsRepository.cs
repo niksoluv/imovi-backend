@@ -9,6 +9,7 @@ namespace imovi_backend.Core.IRepositories
     public interface ICommentsRepository : IGenericRepository<Comment>
     {
         Task<Comment> CreateComment(Comment comment, User user);
+        Task<Comment> EditComment(Comment comment, User user);
         Task<Comment> ReplyComment(CommentReplyDTO commentReply, User user);
         Task<List<Comment>> GetMovieComments(string movieId);
         Task<Comment>LikeComment(Guid commentId, Guid userId);

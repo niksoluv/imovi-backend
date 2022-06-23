@@ -40,6 +40,27 @@ namespace imovi_backend.Core.Repositories
             }
         }
 
+        public async Task<Comment> EditComment(Comment comment, User user)
+        {
+            try
+            {
+                var existingComment = await dbSet.Where(c => c.Id == comment.Id)
+                    .FirstOrDefaultAsync();
+
+                if (existingComment == null)
+                    return null;
+
+                existingComment.Data=comment.Data;
+                dbSet.Update(existingComment);
+                return existingComment;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} EditComment method error", typeof(CommentsRepository));
+                return null;
+            }
+        }
+
         public async Task<Comment> ReplyComment(CommentReplyDTO commentReply, User user)
         {
             try

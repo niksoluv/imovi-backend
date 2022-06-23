@@ -39,6 +39,21 @@ namespace imovi_backend.Controllers
 
         [HttpPost]
         [Authorize]
+        [Route("edit")]
+        public async Task<IActionResult> EditComment([FromBody] Comment comment)
+        {
+            var user = await _unitOfWork.Users.GetByUsername(User.Identity.Name);
+            if (user == null)
+                return NotFound();
+            var result = await _unitOfWork.Comments.EditComment(comment, user);
+            if (result == null)
+                return null;
+            await _unitOfWork.CompleteAsync();
+            return Ok(new { response = result });
+        }
+
+        [HttpPost]
+        [Authorize]
         [Route("reply")]
         public async Task<IActionResult> ReplyComment([FromBody] CommentReplyDTO comment)
         {
