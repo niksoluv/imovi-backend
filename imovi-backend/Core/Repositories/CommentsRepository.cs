@@ -97,9 +97,13 @@ namespace imovi_backend.Core.Repositories
                     .Include(c=>c.CommentReplies)
                     .ThenInclude(cr=>cr.User)
                     .ToListAsync();
-                comments.Reverse();
 
+                comments = comments.OrderByDescending(c => c.Date).ToList();
 
+                foreach (Comment comment in comments)
+                {
+                    comment.CommentReplies = comment.CommentReplies.OrderByDescending(c => c.Date).ToList();
+                }
                 return comments;
             }
             catch (Exception ex)
