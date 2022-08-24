@@ -31,36 +31,15 @@ namespace imovi_backend.Core.Repositories
             }
         }
 
-        public async Task<object> ListsWithMovies(Guid userId)
+        public async Task<List<CustomList>> ListsWithMovies(Guid userId)
         {
             try
             {
                 var lists = dbSet.Where(cl => cl.UserId == userId)
                     .Include(el=>el.RelatedMovies)
                     .ThenInclude(e=>e.Movie);
-                List<CustomListMovie> listMovies = new List<CustomListMovie>();
 
-                //for (int i = 0; i < lists.Count; ++i)
-                //{
-                //    var movies = await _context.CustomListsMovies.Where(clm => clm.CustomListId == lists[i].Id).ToListAsync();
-                //    listMovies.AddRange(movies);
-                //}
-
-                var movies = await _context.CustomListsMovies
-                    .Include(el=>el.Movie)
-                    .ToListAsync();
-
-                //var customLists = await dbSet.Join(_context.CustomListsMovies,
-                //    cl => cl.Id,
-                //    clm => clm.CustomListId,
-                //    (cl, clm) =>
-                //    new
-                //    {
-                //        ListName = cl.ListName,
-                //        Movie = clm.Movie,
-                //    }).ToListAsync();
-
-                return lists;
+                return lists.ToList();
             }
             catch (Exception ex)
             {

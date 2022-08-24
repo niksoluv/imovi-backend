@@ -4,6 +4,8 @@ using imovi_backend.Core.IConfiguration;
 using imovi_backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MockQueryable.Moq;
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -15,96 +17,110 @@ namespace ImoviTests
 {
     internal class CustomListsControllerTests : IDisposable
     {
-        private DbContextOptions<ApplicationContext> dbContextOptions = new DbContextOptionsBuilder<ApplicationContext>()
-        .UseInMemoryDatabase(databaseName: "d9d7t87n7pd40k")
-        .Options;
 
-        private CustomListsController controller;
-        private ApplicationContext _context;
-        private ILogger<CustomListsController> _logger;
         private IUnitOfWork _unitOfWork;
 
-        [OneTimeSetUp]
+        private Mock<ApplicationContext> mockContext;
+
+        [SetUp]
         public void Setup()
         {
-            _context = new ApplicationContext(dbContextOptions);
-
             SeedDb();
 
-            _unitOfWork = new UnitOfWork(_context, new LoggerFactory());
-
-
-            controller = new CustomListsController(_logger, _unitOfWork);
+            _unitOfWork = new UnitOfWork(mockContext.Object, new LoggerFactory());
         }
 
         private void SeedDb()
         {
             var users = new List<User>
             {
-                new User { Id = new System.Guid(), Email = "testEmail1@mail.com", Password="11111111", Username="aaaaaaaa"},
-                new User { Id = new System.Guid(), Email = "testEmail2@mail.com", Password="22222222", Username="bbbbbbbb"},
-                new User { Id = new System.Guid(), Email = "testEmail3@mail.com", Password="33333333", Username="cccccccc"},
-            };
-
-            _context.AddRange(users);
-
-            _context.SaveChanges();
+                new User { Id = Guid.NewGuid(), Email = "testEmail1@mail.com", Password="11111111", Username="aaaaaaaa"},
+                new User { Id = Guid.NewGuid(), Email = "testEmail2@mail.com", Password="22222222", Username="bbbbbbbb"},
+                new User { Id = Guid.NewGuid(), Email = "testEmail3@mail.com", Password="33333333", Username="cccccccc"},
+            }.AsQueryable();
 
             var movies = new List<Movie>
             {
-                new Movie { Id = new System.Guid(), MovieId="123", MediaType="movie"},
-                new Movie { Id = new System.Guid(), MovieId="345", MediaType="movie"},
-                new Movie { Id = new System.Guid(), MovieId="567", MediaType="tv"},
-            };
+                new Movie { Id = Guid.NewGuid(), MovieId="123", MediaType="movie"},
+                new Movie { Id = Guid.NewGuid(), MovieId="345", MediaType="movie"},
+                new Movie { Id = Guid.NewGuid(), MovieId="567", MediaType="tv"},
+            }.AsQueryable();
 
-            _context.AddRange(movies);
-
-            _context.SaveChanges();
-
-            var comments = new List<Comment>
+            var customLists = new List<CustomList>
             {
-                new Comment {
-                    Id = new System.Guid(),
-                    Data = "Comment1",
-                    Likes=3,
-                    User = _context.Users.FirstOrDefault(),
-                    Movie=_context.Movies.FirstOrDefault() },
-                new Comment {
-                    Id = new System.Guid(),
-                    Data = "Comment2",
-                    Likes=0,
-                    User = _context.Users.FirstOrDefault(),
-                    Movie=_context.Movies.FirstOrDefault() },
-                new Comment {
-                    Id = new System.Guid(),
-                    Data = "Comment3",
-                    Likes=12,
-                    User = _context.Users.LastOrDefault(),
-                    Movie=_context.Movies.LastOrDefault() },
-            };
+                new CustomList {
+                    Id = Guid.NewGuid(), ListName="List1", UserId = users.FirstOrDefault().Id },
+                new CustomList {
+                    Id = Guid.NewGuid(), ListName="List2", UserId = users.FirstOrDefault().Id },
+                new CustomList {
+                    Id = Guid.NewGuid(), ListName="List3", UserId = users.FirstOrDefault().Id },
+            }.AsQueryable();
 
-            _context.AddRange(comments);
+            var customListMovies = new List<CustomListMovie>().AsQueryable();
 
-            _context.SaveChanges();
+            var usersMockSet = users.BuildMockDbSet();
+
+            var movieMockSet = movies.BuildMockDbSet();
+
+            var customListsMockSet = customLists.BuildMockDbSet();
+
+            var customListsMoviesMockSet = customListMovies.BuildMockDbSet();
+
+            mockContext = new Mock<ApplicationContext>();
+
+            mockContext.Setup(c => c.Set<User>()).Returns(usersMockSet.Object);
+            mockContext.Setup(c => c.Set<Movie>()).Returns(movieMockSet.Object);
+            mockContext.Setup(c => c.Movies).Returns(movieMockSet.Object);
+            mockContext.Setup(c => c.Set<CustomList>()).Returns(customListsMockSet.Object);
+            mockContext.Setup(c => c.CustomListsMovies).Returns(customListsMoviesMockSet.Object);
         }
 
-        [Test]
-        public async Task GetUserLists()
+        [TestCase("aaaaaaaa", 3)]
+        [TestCase("cccccccc", 0)]
+        //[TestCase("", 0)]
+        public async Task GetUserLists(string username, int numOfLists)
         {
-            Assert.Pass();
+            var user = _unitOfWork.Users.GetByUsername(username).Result;
+
+            var lists = _unitOfWork.CustomLists.ListsWithMovies(user.Id).Result;
+            
+            Assert.IsNotNull(lists);
+            Assert.AreEqual(numOfLists, lists.Count);
         }
 
         [Test]
         public async Task CreateList()
         {
-            await Task.Delay(332);
-            Assert.Pass();
+            var user = _unitOfWork.Users.GetByUsername("aaaaaaaa").Result;
+            var listsBeforeAdding = await _unitOfWork.CustomLists.All(user.Id);
+
+            CustomList list = new CustomList()
+            {
+                ListName = "Test list",
+                UserId = user.Id
+            };
+
+            var result = await _unitOfWork.CustomLists.Add(list);
+            var listsAfterAdding = await _unitOfWork.CustomLists.All(user.Id);
+
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(listsBeforeAdding.ToList().Count + 1, listsAfterAdding.ToList().Count + 1);
         }
 
         [Test]
         public async Task AddMovieToList()
         {
-            Assert.Pass();
+            CustomListMovie customListMovie = new CustomListMovie()
+            {
+                CustomListId = mockContext.Object.Set<CustomList>().FirstOrDefault().Id,
+                MovieId = mockContext.Object.Set<Movie>().FirstOrDefault().Id,
+                Movie = mockContext.Object.Set<Movie>().FirstOrDefault()
+            };
+
+            var result = await _unitOfWork.CustomLists.AddToList(customListMovie);
+
+            Assert.IsNotNull(result);
         }
 
         [Test]
@@ -121,7 +137,7 @@ namespace ImoviTests
 
         public void Dispose()
         {
-            _context.Dispose();
+            //_context.Dispose();
         }
     }
 }
