@@ -6,6 +6,9 @@ using imovi_backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MockQueryable.Moq;
+using Moq;
+using Moq.EntityFrameworkCore;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -14,61 +17,112 @@ using System.Threading.Tasks;
 
 namespace ImoviTests
 {
-    public class AccountControllerTests : IDisposable
+    public class AccountControllerTests
     {
-        private DbContextOptions<ApplicationContext> dbContextOptions = new DbContextOptionsBuilder<ApplicationContext>()
-        .UseInMemoryDatabase(databaseName: "d9d7t87n7pd40k")
-        .Options;
-
-        private AccountController controller;
-        private ApplicationContext _context;
-        private ILogger<AccountController> _logger;
         private IUnitOfWork _unitOfWork;
 
-        [OneTimeSetUp]
+        private Mock<ApplicationContext> _context;
+
+        [SetUp]
         public void Setup()
         {
-            _context = new ApplicationContext(dbContextOptions);
-
             SeedDb();
 
-            _unitOfWork = new UnitOfWork(_context, new LoggerFactory());
-
-
-            controller = new AccountController(_logger, _unitOfWork);
+            _unitOfWork = new UnitOfWork(_context.Object, new LoggerFactory());
         }
 
         private void SeedDb()
         {
+            IList<User> users = new List<User>
+            {
+                new User { Id = Guid.NewGuid(), Email = "testEmail1@mail.com", Password="11111111", Username="aaaaaaaa"},
+                new User { Id = Guid.NewGuid(), Email = "testEmail2@mail.com", Password="22222222", Username="bbbbbbbb"},
+                new User { Id = Guid.NewGuid(), Email = "testEmail3@mail.com", Password="33333333", Username="cccccccc"},
+            };
 
-            var users = new List<User>
-        {
-            new User { Id = new System.Guid(), Email = "testEmail1@mail.com", Password="11111111", Username="aaaaaaaa"},
-            new User { Id = new System.Guid(), Email = "testEmail2@mail.com", Password="22222222", Username="bbbbbbbb"},
-            new User { Id = new System.Guid(), Email = "testEmail3@mail.com", Password="33333333", Username="cccccccc"},
-        };
+            var movies = new List<Movie>
+            {
+                new Movie { Id = Guid.NewGuid(), MovieId="123", MediaType="movie"},
+                new Movie { Id = Guid.NewGuid(), MovieId="345", MediaType="movie"},
+                new Movie { Id = Guid.NewGuid(), MovieId="567", MediaType="tv"},
+            }.AsQueryable();
 
-            _context.AddRange(users);
+            var customLists = new List<CustomList>
+            {
+                new CustomList {
+                    Id = Guid.NewGuid(), ListName="List1", UserId = users.FirstOrDefault().Id },
+                new CustomList {
+                    Id = Guid.NewGuid(), ListName="List2", UserId = users.FirstOrDefault().Id },
+                new CustomList {
+                    Id = Guid.NewGuid(), ListName="List3", UserId = users.FirstOrDefault().Id },
+            }.AsQueryable();
 
-            _context.SaveChanges();
+            var customListMovies = new List<CustomListMovie>()
+            {
+                new CustomListMovie()
+                {
+                    CustomListId = customLists.FirstOrDefault().Id,
+                    MovieId = movies.FirstOrDefault().Id,
+                    Movie = movies.FirstOrDefault()
+                },new CustomListMovie()
+                {
+                    CustomListId = customLists.FirstOrDefault().Id,
+                    MovieId = movies.LastOrDefault().Id,
+                    Movie = movies.FirstOrDefault()
+                },new CustomListMovie()
+                {
+                    CustomListId = customLists.FirstOrDefault().Id,
+                    MovieId = movies.FirstOrDefault().Id,
+                    Movie = movies.LastOrDefault()
+                },new CustomListMovie()
+                {
+                    CustomListId = customLists.FirstOrDefault().Id,
+                    MovieId = movies.FirstOrDefault().Id,
+                    Movie = movies.LastOrDefault()
+                }
+            }.AsQueryable();
+
+            //var usersMockSet = users.BuildMockDbSet();
+
+            var movieMockSet = movies.BuildMockDbSet();
+
+            var customListsMockSet = customLists.BuildMockDbSet();
+
+            var customListsMoviesMockSet = customListMovies.BuildMockDbSet();
+
+            _context = new Mock<ApplicationContext>();
+
+            _context.Setup(c => c.Users).ReturnsDbSet(users);
+            _context.Setup(c => c.Set<User>()).ReturnsDbSet(users);
+            //_context.Setup(c => c.Users.FindAsync(It.IsAny<object[]>())).ReturnsAsync(r=>users.Where(u=>u.Id==r.Id).FirstOrDefault()));
+            //_context.Setup(c => c.Users).Returns(usersMockSet.Object);
+            _context.Setup(c => c.Set<Movie>()).Returns(movieMockSet.Object);
+            _context.Setup(c => c.Movies).Returns(movieMockSet.Object);
+            _context.Setup(c => c.Set<CustomList>()).Returns(customListsMockSet.Object);
+            _context.Setup(c => c.CustomListsMovies).Returns(customListsMoviesMockSet.Object);
+            _context.Setup(c => c.Set<CustomListMovie>()).Returns(customListsMoviesMockSet.Object);
         }
 
         [Test]
         public async Task GetAllUsers()
         {
-            var usersCount = _context.Users.ToList().Count;
-            var users = (await controller.GetAllUsers()).ToList();
+            //arrange
+            var user = _context.Object.Set<User>().FirstOrDefault();
 
-            users.Count.Should().Be(usersCount);
-            users.All(r => r.Username == null).Should().BeFalse();
-            users.All(r => r.CustomLists == null).Should().BeTrue();
+            //act
+            var result = await _unitOfWork.Users.All(user.Id);
+
+            //assert
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.Count() > 0);
+            result.All(r => r.Username == null).Should().BeFalse();
+            result.All(r => r.CustomLists == null).Should().BeTrue();
         }
 
         [Test]
         public async Task CreateUser()
         {
             //Arrange
-            var usersCount = _context.Users.ToList().Count;
             User userToCreate = new User
             {
                 Username = "username",
@@ -77,49 +131,31 @@ namespace ImoviTests
             };
 
             //Act
-            var actionResult = await controller.CreateUser(userToCreate);
+            var result = await _unitOfWork.Users.Add(userToCreate);
 
             //Assert
-            var okObjectResult = actionResult as OkObjectResult;
-            Assert.NotNull(okObjectResult);
-
-            var user = okObjectResult.Value as User;
-            Assert.NotNull(user);
-
-            user.Username.Should().Be("username");
-            user.Password.Should().Be("testpassword");
-            user.Email.Should().Be("testmail@testmail");
-
-            _context.Users.ToList().Count.Should().Be(usersCount + 1);
+            Assert.NotNull(result);
+            Assert.IsTrue(result);
         }
 
         [Test]
-        public async Task GetUserBuId()
+        public async Task GetUserById()
         {
             //Arrange
-            User user = _context.Users.FirstOrDefault();
+            User user = _context.Object.Users.FirstOrDefault();
 
             //Act
-            var actionResult = await controller.GetUser(user.Id);
+            var result = await _unitOfWork.Users.GetById(user.Id);
 
             //Assert
-            var okObjectResult = actionResult as OkObjectResult;
-            Assert.NotNull(okObjectResult);
+            Assert.NotNull(result);
 
-            var userResult = okObjectResult.Value as User;
-            Assert.NotNull(userResult);
-
-            userResult.Should().BeEquivalentTo(user);
-            userResult.Username.Should().Be(user.Username);
-            userResult.Password.Should().Be(user.Password);
-            userResult.Email.Should().Be(user.Email);
+            result.Should().BeEquivalentTo(user);
+            result.Username.Should().Be(user.Username);
+            result.Password.Should().Be(user.Password);
+            result.Email.Should().Be(user.Email);
 
             //_context.Users.ToList().Count.Should().Be(4);           
-        }
-
-        public void Dispose()
-        {
-            _context.Dispose();
         }
     }
 }

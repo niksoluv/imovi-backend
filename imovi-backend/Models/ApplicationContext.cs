@@ -8,7 +8,7 @@ namespace imovi_backend.Models
         public DbSet<FavouriteMovie> FavoriteMovies { get; set; }
         public virtual DbSet<Movie> Movies { get; set; }
         public DbSet<UserMovieHistory> UserMovieHistories { get; set; }
-        public DbSet<Comment> Comments { get; set; }
+        public virtual DbSet<Comment> Comments { get; set; }
         public DbSet<LikedComment> LikedComments { get; set; }
         public virtual DbSet<CustomList> CustomLists { get; set; }
         public virtual DbSet<CustomListMovie> CustomListsMovies { get; set; }

@@ -35,11 +35,12 @@ namespace imovi_backend.Core.Repositories
         {
             try
             {
-                var lists = dbSet.Where(cl => cl.UserId == userId)
+                List<CustomList> lists = await dbSet.Where(cl => cl.UserId == userId)
                     .Include(el=>el.RelatedMovies)
-                    .ThenInclude(e=>e.Movie);
+                    .ThenInclude(e=>e.Movie)
+                    .ToListAsync();
 
-                return lists.ToList();
+                return lists;
             }
             catch (Exception ex)
             {

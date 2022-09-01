@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace ImoviTests
 {
-    internal class CustomListsControllerTests : IDisposable
+    internal class CustomListsControllerTests
     {
 
         private IUnitOfWork _unitOfWork;
@@ -56,7 +56,30 @@ namespace ImoviTests
                     Id = Guid.NewGuid(), ListName="List3", UserId = users.FirstOrDefault().Id },
             }.AsQueryable();
 
-            var customListMovies = new List<CustomListMovie>().AsQueryable();
+            var customListMovies = new List<CustomListMovie>()
+            {
+                new CustomListMovie()
+                {
+                    CustomListId = customLists.FirstOrDefault().Id,
+                    MovieId = movies.FirstOrDefault().Id,
+                    Movie = movies.FirstOrDefault()
+                },new CustomListMovie()
+                {
+                    CustomListId = customLists.FirstOrDefault().Id,
+                    MovieId = movies.LastOrDefault().Id,
+                    Movie = movies.FirstOrDefault()
+                },new CustomListMovie()
+                {
+                    CustomListId = customLists.FirstOrDefault().Id,
+                    MovieId = movies.FirstOrDefault().Id,
+                    Movie = movies.LastOrDefault()
+                },new CustomListMovie()
+                {
+                    CustomListId = customLists.FirstOrDefault().Id,
+                    MovieId = movies.FirstOrDefault().Id,
+                    Movie = movies.LastOrDefault()
+                }
+            }.AsQueryable();
 
             var usersMockSet = users.BuildMockDbSet();
 
@@ -73,6 +96,7 @@ namespace ImoviTests
             mockContext.Setup(c => c.Movies).Returns(movieMockSet.Object);
             mockContext.Setup(c => c.Set<CustomList>()).Returns(customListsMockSet.Object);
             mockContext.Setup(c => c.CustomListsMovies).Returns(customListsMoviesMockSet.Object);
+            mockContext.Setup(c => c.Set<CustomListMovie>()).Returns(customListsMoviesMockSet.Object);
         }
 
         [TestCase("aaaaaaaa", 3)]
@@ -83,7 +107,7 @@ namespace ImoviTests
             var user = _unitOfWork.Users.GetByUsername(username).Result;
 
             var lists = _unitOfWork.CustomLists.ListsWithMovies(user.Id).Result;
-            
+
             Assert.IsNotNull(lists);
             Assert.AreEqual(numOfLists, lists.Count);
         }
@@ -126,18 +150,24 @@ namespace ImoviTests
         [Test]
         public async Task RemoveMovieFromList()
         {
-            Assert.Pass();
+            //Assert
+            CustomListMovie customListMovie = mockContext.Object.Set<CustomListMovie>().FirstOrDefault();
+            var user = await _unitOfWork.Users.GetByUsername("aaaaaaaa");
+            var customListMoviesCount = await _unitOfWork.CustomLists.All(user.Id);
+
+            //Act
+            var result = _unitOfWork.CustomLists.RemoveFromList(customListMovie);
+            var customListMoviesCountAfterRemove = await _unitOfWork.CustomLists.All(user.Id);
+
+            //Arrange
+            Assert.IsNotNull(result);
+            //Assert.AreEqual(customListMoviesCount.ToList().Count - 1, customListMoviesCountAfterRemove.ToList().Count);
         }
 
         [Test]
         public async Task DeleteList()
         {
             Assert.Pass();
-        }
-
-        public void Dispose()
-        {
-            //_context.Dispose();
         }
     }
 }
