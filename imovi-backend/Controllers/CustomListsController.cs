@@ -54,7 +54,7 @@ namespace imovi_backend.Controllers
                 ListName = customList.ListName,
                 IsVisible = false
             };
-            await _unitOfWork.CustomLists.Add(cl);
+            _unitOfWork.CustomLists.Add(cl);
             await _unitOfWork.CompleteAsync();
             return Ok();
         }
@@ -79,7 +79,7 @@ namespace imovi_backend.Controllers
         [HttpPost]
         [Route("remove")]
         [Authorize]
-        public async Task<IActionResult> RemoveDromList([FromBody] CustomListMovie customListMovie)
+        public async Task<IActionResult> RemoveFromList([FromBody] CustomListMovie customListMovie)
         {
             var user = await _unitOfWork.Users.GetByUsername(User.Identity.Name);
             if (user == null)
@@ -88,7 +88,7 @@ namespace imovi_backend.Controllers
             }
 
 
-            var res = await _unitOfWork.CustomLists.RemoveFromList(customListMovie);
+            var res = _unitOfWork.CustomLists.RemoveFromList(customListMovie);
             await _unitOfWork.CompleteAsync();
             return Ok(res);
         }

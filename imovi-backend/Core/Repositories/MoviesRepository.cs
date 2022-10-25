@@ -22,11 +22,21 @@ namespace imovi_backend.Core.Repositories
 
         public override async Task<IEnumerable<FavouriteMovie>> All(Guid userId)
         {
-            var movies = await dbSet.Where(fm => fm.UserId == userId)
-                .Include(fm=>fm.Movie)
-                .ToListAsync();
-            movies.Reverse();
-            return movies;
+            try
+            {
+                var movies = await dbSet.Where(fm => fm.UserId == userId)
+                    .Include(fm => fm.Movie)
+                    .ToListAsync();
+                if (movies == null)
+                    return null;
+                movies.Reverse();
+                return movies;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} All method error", typeof(MoviesRepository));
+                return null;
+            }
         }
 
         public async Task<FavouriteMovie> AddToFavourites(Guid userId, FavMovieDTO favouriteMovieDTO)
@@ -42,12 +52,6 @@ namespace imovi_backend.Core.Repositories
                         MediaType = favouriteMovieDTO.MediaType,
                     });
 
-                FavouriteMovie existingMovie = await dbSet.
-                    Where(fm => fm.UserId == userId && fm.MovieId == movie.Id).FirstOrDefaultAsync();
-                if (existingMovie != null)
-                {
-                    return existingMovie;
-                }
                 FavouriteMovie newMovie = new FavouriteMovie()
                 { UserId = userId, Movie = movie };
                 await _context.FavoriteMovies.AddAsync(newMovie);

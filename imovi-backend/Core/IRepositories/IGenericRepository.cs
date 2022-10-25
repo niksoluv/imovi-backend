@@ -8,7 +8,7 @@ namespace imovi_backend.Core.IRepositories
     {
         Task<IEnumerable<T>> All(Guid userId);
         Task<T> GetById(Guid id);
-        Task<bool> Add(T entity);
+        bool Add(T entity);
         Task<bool> Upsert(T entity);
         Task<bool> Delete(Guid id);
     }

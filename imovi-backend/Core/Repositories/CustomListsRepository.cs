@@ -70,7 +70,7 @@ namespace imovi_backend.Core.Repositories
             }
         }
 
-        public async Task<CustomListMovie> RemoveFromList(CustomListMovie customListMovie)
+        public CustomListMovie RemoveFromList(CustomListMovie customListMovie)
         {
             try
             {

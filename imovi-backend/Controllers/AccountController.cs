@@ -49,7 +49,7 @@ namespace imovi_backend.Controllers
                 return Ok(new { errorMessage = "User with this email already exists." });
             }
 
-            await _unitOfWork.Users.Add(user);
+            _unitOfWork.Users.Add(user);
             await _unitOfWork.CompleteAsync();
 
             return Ok(user);

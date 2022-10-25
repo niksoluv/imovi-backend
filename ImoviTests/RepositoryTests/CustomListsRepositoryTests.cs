@@ -1,9 +1,7 @@
-using FluentAssertions;
-using imovi_backend;
+﻿using imovi_backend;
 using imovi_backend.Controllers;
 using imovi_backend.Core.IConfiguration;
 using imovi_backend.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
@@ -13,12 +11,14 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace ImoviTests
+namespace ImoviTests.RepositoryTests
 {
-    public class AccountControllerTests
+    internal class CustomListsRepositoryTests
     {
+
         private IUnitOfWork _unitOfWork;
 
         private Mock<ApplicationContext> _context;
@@ -33,7 +33,7 @@ namespace ImoviTests
 
         private void SeedDb()
         {
-            IList<User> users = new List<User>
+            var users = new List<User>
             {
                 new User { Id = Guid.NewGuid(), Email = "testEmail1@mail.com", Password="11111111", Username="aaaaaaaa"},
                 new User { Id = Guid.NewGuid(), Email = "testEmail2@mail.com", Password="22222222", Username="bbbbbbbb"},
@@ -45,7 +45,7 @@ namespace ImoviTests
                 new Movie { Id = Guid.NewGuid(), MovieId="123", MediaType="movie"},
                 new Movie { Id = Guid.NewGuid(), MovieId="345", MediaType="movie"},
                 new Movie { Id = Guid.NewGuid(), MovieId="567", MediaType="tv"},
-            }.AsQueryable();
+            };
 
             var customLists = new List<CustomList>
             {
@@ -55,7 +55,7 @@ namespace ImoviTests
                     Id = Guid.NewGuid(), ListName="List2", UserId = users.FirstOrDefault().Id },
                 new CustomList {
                     Id = Guid.NewGuid(), ListName="List3", UserId = users.FirstOrDefault().Id },
-            }.AsQueryable();
+            };
 
             var customListMovies = new List<CustomListMovie>()
             {
@@ -80,82 +80,99 @@ namespace ImoviTests
                     MovieId = movies.FirstOrDefault().Id,
                     Movie = movies.LastOrDefault()
                 }
-            }.AsQueryable();
-
-            //var usersMockSet = users.BuildMockDbSet();
-
-            var movieMockSet = movies.BuildMockDbSet();
-
-            var customListsMockSet = customLists.BuildMockDbSet();
-
-            var customListsMoviesMockSet = customListMovies.BuildMockDbSet();
+            };
 
             _context = new Mock<ApplicationContext>();
 
-            _context.Setup(c => c.Users).ReturnsDbSet(users);
             _context.Setup(c => c.Set<User>()).ReturnsDbSet(users);
-            //_context.Setup(c => c.Users.FindAsync(It.IsAny<object[]>())).ReturnsAsync(r=>users.Where(u=>u.Id==r.Id).FirstOrDefault()));
-            //_context.Setup(c => c.Users).Returns(usersMockSet.Object);
-            _context.Setup(c => c.Set<Movie>()).Returns(movieMockSet.Object);
-            _context.Setup(c => c.Movies).Returns(movieMockSet.Object);
-            _context.Setup(c => c.Set<CustomList>()).Returns(customListsMockSet.Object);
-            _context.Setup(c => c.CustomListsMovies).Returns(customListsMoviesMockSet.Object);
-            _context.Setup(c => c.Set<CustomListMovie>()).Returns(customListsMoviesMockSet.Object);
+            _context.Setup(c => c.Set<Movie>()).ReturnsDbSet(movies);
+            _context.Setup(c => c.Movies).ReturnsDbSet(movies);
+            _context.Setup(c => c.Set<CustomList>()).ReturnsDbSet(customLists);
+            _context.Setup(c => c.CustomListsMovies).ReturnsDbSet(customListMovies);
+            _context.Setup(c => c.Set<CustomListMovie>()).ReturnsDbSet(customListMovies);
         }
 
         [Test]
-        public async Task GetAllUsers()
-        {
-            //arrange
-            var user = _context.Object.Set<User>().FirstOrDefault();
-
-            //act
-            var result = await _unitOfWork.Users.All(user.Id);
-
-            //assert
-            Assert.IsNotNull(result);
-            Assert.IsTrue(result.Count() > 0);
-            result.All(r => r.Username == null).Should().BeFalse();
-            result.All(r => r.CustomLists == null).Should().BeTrue();
-        }
-
-        [Test]
-        public async Task CreateUser()
+        public async Task All()
         {
             //Arrange
-            User userToCreate = new User
+            var user = await _context.Object.Set<CustomList>().FirstOrDefaultAsync();
+
+            //Act
+            var result = await _unitOfWork.CustomLists.All(user.Id);
+
+            //Assert
+            Assert.IsNotNull(result);
+        }
+
+        [TestCase("aaaaaaaa", 3)]
+        [TestCase("cccccccc", 0)]
+        //[TestCase("", 0)]
+        public async Task GetUserLists(string username, int numOfLists)
+        {
+            var user = await _unitOfWork.Users.GetByUsername(username);
+
+            var lists = await _unitOfWork.CustomLists.ListsWithMovies(user.Id);
+
+            Assert.IsNotNull(lists);
+            Assert.AreEqual(numOfLists, lists.Count);
+        }
+
+        [Test]
+        public async Task CreateList()
+        {
+            var user = _unitOfWork.Users.GetByUsername("aaaaaaaa").Result;
+
+            CustomList list = new()
             {
-                Username = "username",
-                Email = "testmail@testmail",
-                Password = "testpassword"
+                ListName = "Test list",
+                UserId = user.Id
             };
 
-            //Act
-            var result = await _unitOfWork.Users.Add(userToCreate);
+            var result = _unitOfWork.CustomLists.Add(list);
 
-            //Assert
-            Assert.NotNull(result);
-            Assert.IsTrue(result);
+            Assert.IsNotNull(result);
         }
 
         [Test]
-        public async Task GetUserById()
+        public async Task AddMovieToList()
+        {
+            CustomListMovie customListMovie = new()
+            {
+                CustomListId = _context.Object.Set<CustomList>().FirstOrDefault().Id,
+                MovieId = _context.Object.Set<Movie>().FirstOrDefault().Id,
+                Movie = _context.Object.Set<Movie>().FirstOrDefault()
+            };
+
+            var result = await _unitOfWork.CustomLists.AddToList(customListMovie);
+
+            Assert.IsNotNull(result);
+        }
+
+        [Test]
+        public async Task RemoveMovieFromList()
         {
             //Arrange
-            User user = _context.Object.Users.FirstOrDefault();
+            CustomListMovie customListMovie = await _context.Object.Set<CustomListMovie>().FirstOrDefaultAsync();
 
             //Act
-            var result = await _unitOfWork.Users.GetById(user.Id);
+            var result = _unitOfWork.CustomLists.RemoveFromList(customListMovie);
 
             //Assert
-            Assert.NotNull(result);
+            Assert.IsNotNull(result);
+        }
 
-            result.Should().BeEquivalentTo(user);
-            result.Username.Should().Be(user.Username);
-            result.Password.Should().Be(user.Password);
-            result.Email.Should().Be(user.Email);
+        [Test]
+        public async Task DeleteList()
+        {
+            //Arrange
+            CustomList customList = _context.Object.Set<CustomList>().FirstOrDefault();
 
-            //_context.Users.ToList().Count.Should().Be(4);           
+            //Act
+            var result = await _unitOfWork.CustomLists.Delete(customList.Id);
+
+            //Assert
+            Assert.IsTrue(result);
         }
     }
 }

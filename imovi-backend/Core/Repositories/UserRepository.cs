@@ -27,7 +27,8 @@ namespace imovi_backend.Core.Repositories
         {
             try
             {
-                return await dbSet.ToListAsync();
+                var res = dbSet.ToList();
+                return res;
             }
             catch (Exception ex)
             {
@@ -40,7 +41,7 @@ namespace imovi_backend.Core.Repositories
         {
             try
             {
-                var user = await dbSet.FirstOrDefaultAsync(x => x.Id == id);
+                var user = await dbSet.FindAsync(id);
                 if (user != null)
                     return user.Username;
 
@@ -49,7 +50,7 @@ namespace imovi_backend.Core.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "{Repo} GetUserUsername method error", typeof(UserRepository));
-                return "";
+                return null;
             }
         }
 
@@ -76,7 +77,7 @@ namespace imovi_backend.Core.Repositories
             {
                 var existingUser = await dbSet.Where(u => u.Id == user.Id).FirstOrDefaultAsync();
                 if (existingUser == null)
-                    return await Add(user);
+                    return Add(user);
 
                 existingUser.Username = user.Username;
                 existingUser.Email = user.Email;
@@ -88,6 +89,11 @@ namespace imovi_backend.Core.Repositories
                 _logger.LogError(ex, "{Repo} Upsert method error", typeof(UserRepository));
                 return false;
             }
+        }
+
+        public override async Task<User> GetById(Guid id)
+        {
+            return await dbSet.Where(u => u.Id == id).FirstOrDefaultAsync();
         }
 
         public override async Task<bool> Delete(Guid id)
@@ -148,6 +154,8 @@ namespace imovi_backend.Core.Repositories
 
         public object GetToken(User user)
         {
+            try
+            {
             var identity = GetIdentity(user.Username, user.Password);
             if (identity == null)
             {
@@ -172,25 +180,39 @@ namespace imovi_backend.Core.Repositories
                 username = identity.Name
             };
             return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{GetToken} All method error", typeof(UserRepository));
+                return null;
+            }
         }
         private ClaimsIdentity GetIdentity(string username, string password)
         {
-            User user = dbSet.FirstOrDefault(x => x.Username == username && x.Password == password);
-            if (user != null)
+            try
             {
-                var claims = new List<Claim>
+                User user = dbSet.FirstOrDefault(x => x.Username == username && x.Password == password);
+                if (user != null)
+                {
+                    var claims = new List<Claim>
                 {
                     new Claim(ClaimsIdentity.DefaultNameClaimType, user.Username),
                     new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role)
                 };
-                ClaimsIdentity claimsIdentity =
-                new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
-                    ClaimsIdentity.DefaultRoleClaimType);
-                return claimsIdentity;
-            }
+                    ClaimsIdentity claimsIdentity =
+                    new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
+                        ClaimsIdentity.DefaultRoleClaimType);
+                    return claimsIdentity;
+                }
 
-            // если пользователя не найдено
-            return null;
+                // если пользователя не найдено
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{GetIdentity} All method error", typeof(UserRepository));
+                return null;
+            }
         }
     }
 }

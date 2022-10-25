@@ -33,9 +33,9 @@ namespace imovi_backend.Core.Repositories
             return await dbSet.FindAsync(id);
         }
 
-        public virtual async Task<bool> Add(T entity)
+        public virtual bool Add(T entity)
         {
-            await dbSet.AddAsync(entity);
+            dbSet.Add(entity);
             return true;
         }
 

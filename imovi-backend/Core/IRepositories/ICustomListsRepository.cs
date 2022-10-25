@@ -9,6 +9,6 @@ namespace imovi_backend.Core.IRepositories
     {
         Task<List<CustomList>> ListsWithMovies(Guid userId);
         Task<CustomListMovie> AddToList(CustomListMovie customListMovie);
-        Task<CustomListMovie> RemoveFromList(CustomListMovie customListMovie);
+        CustomListMovie RemoveFromList(CustomListMovie customListMovie);
     }
 }
